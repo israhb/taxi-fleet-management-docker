@@ -1,0 +1,29 @@
+version: '3'
+
+services:
+  taxis: #nombre de la app establecido en application.properties
+    build: backend #nombre de la carpeta donde está el DockerFile
+    mem_limit: 512m
+    ports:
+      - "8080:8080"
+    environment:
+      DB_URL: jdbc:mysql://taxisDB:3306/taxis?createDatabaseIfNotExist=true&serverTimezone=UTC
+      DB_USER_NAME: root
+      DB_PASSWORD: 1234
+    restart: always
+    depends_on:
+      taxisDB:
+          condition: service_healthy
+  taxisDB: #configuraciones de base de datos dockerizada
+    image: mysql:8.0.33 #misma versión que esté en el pom
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: 1234
+      MYSQL_PASSWORD: 1234
+      MYSQL_DATABASE: taxis
+    restart: always
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      timeout: 10s
+      retries: 10
