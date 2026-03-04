@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>com.mentedigital.israel</groupId>
 	<artifactId>taxis</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.0.1</version>
 	<name>taxis</name>
 	<description>proyect taxis</description>
 	<url/>
