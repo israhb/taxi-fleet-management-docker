@@ -1,48 +1,41 @@
-CREATE DATABASE taxi_control;
-USE taxi_control;
+CREATE DATABASE control_taxis;
+USE control_taxis;
 
 -- =========================
 -- ROLES
 -- =========================
 CREATE TABLE roles (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
-    name VARCHAR(50) NOT NULL UNIQUE,
-    description VARCHAR(255),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    deleted_at TIMESTAMP NULL,
-    deleted_by BIGINT NULL
+    nombre VARCHAR(50) NOT NULL UNIQUE,
+    descripcion VARCHAR(255),
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- =========================
--- USERS
+-- USUARIOS
 -- =========================
-CREATE TABLE users (
+CREATE TABLE usuarios (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
-    role_id BIGINT NOT NULL,
-    username VARCHAR(100) NOT NULL UNIQUE,
+    rol_id BIGINT NOT NULL,
+    usuario VARCHAR(100) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
-    full_name VARCHAR(150),
-    is_active BOOLEAN DEFAULT TRUE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    deleted_at TIMESTAMP NULL,
-    deleted_by BIGINT NULL,
-    FOREIGN KEY (role_id) REFERENCES roles(id)
+    nombre_completo VARCHAR(150),
+    activo BOOLEAN DEFAULT TRUE,
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (rol_id) REFERENCES roles(id)
 );
 
 -- =========================
--- DRIVERS (CONDUCTORES)
+-- CONDUCTORES
 -- =========================
-CREATE TABLE drivers (
+CREATE TABLE conductores (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
-    full_name VARCHAR(150) NOT NULL,
-    phone VARCHAR(20),
-    address VARCHAR(255),
-    license_number VARCHAR(100),
-    hire_date DATE,
-    is_active BOOLEAN DEFAULT TRUE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    deleted_at TIMESTAMP NULL,
-    deleted_by BIGINT NULL
+    nombre_completo VARCHAR(150) NOT NULL,
+    telefono VARCHAR(20),
+    direccion VARCHAR(255),
+    numero_licencia VARCHAR(100),
+    fecha_contratacion DATE,
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- =========================
@@ -50,99 +43,134 @@ CREATE TABLE drivers (
 -- =========================
 CREATE TABLE taxis (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
-    nickname VARCHAR(100) NOT NULL,
-    brand VARCHAR(100),
-    model VARCHAR(100),
-    year INT,
-    license_plate VARCHAR(20),
-    purchase_price DECIMAL(12,2),
-    purchase_date DATE,
-    is_active BOOLEAN DEFAULT TRUE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    deleted_at TIMESTAMP NULL,
-    deleted_by BIGINT NULL
+    nombre_unidad VARCHAR(100) NOT NULL,
+    marca VARCHAR(100),
+    modelo VARCHAR(100),
+    anio INT,
+    color VARCHAR(50),
+    placa VARCHAR(20),
+    precio_compra DECIMAL(12,2),
+    fecha_compra DATE,
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- =========================
--- HISTORIAL TAXI - DRIVER
+-- HISTORIAL TAXI - CONDUCTOR
 -- =========================
-CREATE TABLE taxi_driver_assignments (
+CREATE TABLE asignaciones_taxi_conductor (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
     taxi_id BIGINT NOT NULL,
-    driver_id BIGINT NOT NULL,
-    start_date DATE NOT NULL,
-    end_date DATE NULL,
-    is_active BOOLEAN DEFAULT TRUE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    conductor_id BIGINT NOT NULL,
+    fecha_inicio DATE NOT NULL,
+    fecha_fin DATE NULL,
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (taxi_id) REFERENCES taxis(id),
-    FOREIGN KEY (driver_id) REFERENCES drivers(id)
+    FOREIGN KEY (conductor_id) REFERENCES conductores(id)
 );
 
 -- =========================
--- GASTOS INICIALES (UNA SOLA VEZ)
+-- CATEGORIAS DE GASTOS
 -- =========================
-CREATE TABLE taxi_initial_expenses (
+CREATE TABLE categorias_gastos (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    nombre VARCHAR(100) NOT NULL
+);
+
+-- =========================
+-- INGRESOS
+-- =========================
+CREATE TABLE ingresos (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
     taxi_id BIGINT NOT NULL,
-    description VARCHAR(255) NOT NULL,
-    amount DECIMAL(12,2) NOT NULL,
-    expense_date DATE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    deleted_at TIMESTAMP NULL,
-    deleted_by BIGINT NULL,
+    conductor_id BIGINT,
+    monto DECIMAL(12,2) NOT NULL,
+    fecha_hora_ingreso DATETIME NOT NULL,
+    notas TEXT,
+    creado_por BIGINT,
+    FOREIGN KEY (taxi_id) REFERENCES taxis(id),
+    FOREIGN KEY (conductor_id) REFERENCES conductores(id),
+    FOREIGN KEY (creado_por) REFERENCES usuarios(id)
+);
+
+-- =========================
+-- GASTOS
+-- =========================
+CREATE TABLE gastos (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    taxi_id BIGINT NOT NULL,
+    categoria_id BIGINT,
+    descripcion VARCHAR(255),
+    monto DECIMAL(12,2) NOT NULL,
+    fecha_hora_gasto DATETIME NOT NULL,
+    notas TEXT,
+    creado_por BIGINT,
+    FOREIGN KEY (taxi_id) REFERENCES taxis(id),
+    FOREIGN KEY (categoria_id) REFERENCES categorias_gastos(id),
+    FOREIGN KEY (creado_por) REFERENCES usuarios(id)
+);
+
+-- =========================
+-- TIPOS DE MANTENIMIENTO
+-- =========================
+CREATE TABLE tipos_mantenimiento (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    nombre VARCHAR(100) NOT NULL
+);
+
+-- =========================
+-- MANTENIMIENTOS
+-- =========================
+CREATE TABLE mantenimientos_taxi (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    taxi_id BIGINT NOT NULL,
+    tipo_mantenimiento_id BIGINT,
+    descripcion VARCHAR(255),
+    fecha_hora_mantenimiento DATETIME NOT NULL,
+    costo DECIMAL(12,2),
+    fecha_proximo_mantenimiento DATE,
+    notas TEXT,
+    creado_por BIGINT,
+    FOREIGN KEY (taxi_id) REFERENCES taxis(id),
+    FOREIGN KEY (tipo_mantenimiento_id) REFERENCES tipos_mantenimiento(id),
+    FOREIGN KEY (creado_por) REFERENCES usuarios(id)
+);
+
+-- =========================
+-- REGISTRO DE KILOMETRAJE
+-- =========================
+CREATE TABLE registro_kilometraje (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    taxi_id BIGINT NOT NULL,
+    kilometraje INT NOT NULL,
+    fecha DATE NOT NULL,
+    notas TEXT,
     FOREIGN KEY (taxi_id) REFERENCES taxis(id)
 );
 
 -- =========================
--- INGRESOS (ENTRADAS)
+-- INDICES
 -- =========================
-CREATE TABLE incomes (
-    id BIGINT PRIMARY KEY AUTO_INCREMENT,
-    taxi_id BIGINT NOT NULL,
-    driver_id BIGINT NULL,
-    amount DECIMAL(12,2) NOT NULL,
-    income_date DATE NOT NULL,
-    notes TEXT,
-    created_by BIGINT NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    deleted_at TIMESTAMP NULL,
-    deleted_by BIGINT NULL,
-    FOREIGN KEY (taxi_id) REFERENCES taxis(id),
-    FOREIGN KEY (driver_id) REFERENCES drivers(id),
-    FOREIGN KEY (created_by) REFERENCES users(id)
-);
+CREATE INDEX idx_ingresos_fecha ON ingresos(fecha_hora_ingreso);
+CREATE INDEX idx_gastos_fecha ON gastos(fecha_hora_gasto);
+CREATE INDEX idx_mantenimientos_fecha ON mantenimientos_taxi(fecha_hora_mantenimiento);
 
 -- =========================
--- GASTOS OPERATIVOS
+-- DATOS BASE
 -- =========================
-CREATE TABLE expenses (
-    id BIGINT PRIMARY KEY AUTO_INCREMENT,
-    taxi_id BIGINT NOT NULL,
-    driver_id BIGINT NULL,
-    description VARCHAR(255) NOT NULL,
-    amount DECIMAL(12,2) NOT NULL,
-    expense_date DATE NOT NULL,
-    notes TEXT,
-    created_by BIGINT NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    deleted_at TIMESTAMP NULL,
-    deleted_by BIGINT NULL,
-    FOREIGN KEY (taxi_id) REFERENCES taxis(id),
-    FOREIGN KEY (driver_id) REFERENCES drivers(id),
-    FOREIGN KEY (created_by) REFERENCES users(id)
-);
+INSERT INTO roles (nombre, descripcion) VALUES
+('ADMIN_GENERAL','Administrador total del sistema'),
+('ADMIN_OPERATIVO','Captura ingresos y gastos');
 
--- =========================
--- ÍNDICES IMPORTANTES
--- =========================
-CREATE INDEX idx_income_date ON incomes(income_date);
-CREATE INDEX idx_expense_date ON expenses(expense_date);
-CREATE INDEX idx_taxi_income ON incomes(taxi_id);
-CREATE INDEX idx_taxi_expense ON expenses(taxi_id);
+INSERT INTO categorias_gastos (nombre) VALUES
+('Gasolina'),
+('Refacciones'),
+('Mantenimiento'),
+('Seguro'),
+('Multa'),
+('Verificación');
 
--- =========================
--- ROLES BASE
--- =========================
-INSERT INTO roles (name, description) VALUES
-('ADMIN_GENERAL', 'Puede ver reportes y administrar todo'),
-('ADMIN_OPERATIVO', 'Puede capturar ingresos y gastos');
+INSERT INTO tipos_mantenimiento (nombre) VALUES
+('Cambio de aceite'),
+('Cambio de balatas'),
+('Afinación'),
+('Servicio general');
