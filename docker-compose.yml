@@ -1,5 +1,3 @@
-version: '3'
-
 services:
   taxis: #nombre de la app establecido en application.properties
     build: backend #nombre de la carpeta donde está el DockerFile
@@ -17,7 +15,7 @@ services:
   taxisDB: #configuraciones de base de datos dockerizada
     image: mysql:8.0.33 #misma versión que esté en el pom
     ports:
-      - "3306:3306"
+      - "3307:3306"
     environment:
       MYSQL_ROOT_PASSWORD: 1234
       MYSQL_PASSWORD: 1234
