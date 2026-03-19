@@ -1,6 +1,7 @@
 package com.mentedigital.israel.taxis.service;
 
 import com.mentedigital.israel.taxis.dto.UsuarioDTO;
+import com.mentedigital.israel.taxis.dto.auth.UsuarioRequestDTO;
 import com.mentedigital.israel.taxis.exeption.NotFoundExeption;
 import com.mentedigital.israel.taxis.mapper.Mapper;
 import com.mentedigital.israel.taxis.model.Usuario;
@@ -41,5 +42,18 @@ public class UsuarioService implements IUsuarioService{
     public void elimnar(Long id) {
         if(!repo.existsById(id)) throw new NotFoundExeption("Not found..");
         repo.deleteById(id);
+    }
+
+    @Override
+    public UsuarioRequestDTO login(String user, String password) {
+        // 1. Buscamos el usuario
+        Usuario usuario = repo.findByUsuario(user)
+                .orElseThrow(() -> new NotFoundExeption("Credenciales incorrectas"));
+        // 2. Validamos la contraseña (En producción usa BCrypt)
+        if (!usuario.getPassword().equals(password)) {
+            throw new NotFoundExeption("Credenciales incorrectas");
+        }
+        // 3. Retornamos el DTO si todo está bien
+        return Mapper.toDtoLogin(usuario);
     }
 }

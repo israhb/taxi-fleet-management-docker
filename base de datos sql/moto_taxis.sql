@@ -20,7 +20,7 @@ CREATE TABLE usuarios (
     usuario VARCHAR(100) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
     nombre_completo VARCHAR(150),
-    activo BOOLEAN DEFAULT TRUE,
+    activo TINYINT(1) DEFAULT 1,
     fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (rol_id) REFERENCES roles(id)
 );

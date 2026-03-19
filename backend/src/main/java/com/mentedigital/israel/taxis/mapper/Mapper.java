@@ -1,6 +1,7 @@
 package com.mentedigital.israel.taxis.mapper;
 
 import com.mentedigital.israel.taxis.dto.*;
+import com.mentedigital.israel.taxis.dto.auth.UsuarioRequestDTO;
 import com.mentedigital.israel.taxis.model.*;
 
 import java.util.List;
@@ -63,6 +64,23 @@ public class Mapper {
                 .password(u.getPassword())
                 .nombreCompleto(u.getNombreCompleto())
                 .activo(u.getActivo())
+                .rol(
+                        List.of(
+                                RolDTO.builder()
+                                        .id(u.getRol().getId())
+                                        .nombre(u.getRol().getNombre())
+                                        .descripcion(u.getRol().getDescripcion())
+                                        .build()
+                        )
+                )
+                .build();
+    }
+    public static UsuarioRequestDTO toDtoLogin(Usuario u){
+        if( u == null ) return null;
+        return UsuarioRequestDTO.builder()
+                .id(u.getId())
+                .usuario(u.getUsuario())
+                .nombreCompleto(u.getNombreCompleto())
                 .rol(
                         List.of(
                                 RolDTO.builder()
